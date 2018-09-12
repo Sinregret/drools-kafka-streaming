@@ -4,6 +4,7 @@
 
 开发环境：
 - jdk 1.8
+- Scala 2.11
 - kafka 0.10
 - spark 2.3.1
 - drools 6.5
