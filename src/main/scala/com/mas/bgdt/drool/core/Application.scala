@@ -14,7 +14,7 @@ object Application {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
       .builder()
-      .appName("prj_sgm_iapps_platform")
+      .appName("drools_streaming")
       .master("local[*]")
       .getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
