@@ -1,12 +1,14 @@
 package com.mas.bgdt.drool.fact
 
 class Model() extends Serializable {
-  private var vin :String = _
-  private var birthday :String = _
-  private var brand :String = _
-  private var series :String = _
-  private var infoType :String = _
-  private var ruleGroup :String = _
+  private var vin :String = ""
+  private var birthday :String = ""
+  private var brand :String = ""
+  private var series :String = ""
+  private var infoType :String = ""
+  private var ruleGroup :String = ""
+  private var timestamp :Long = 0
+  private var ruleFlow :String = ""
 
   def getVin: String = this.vin
 
@@ -43,16 +45,27 @@ class Model() extends Serializable {
   def setRuleGroup(ruleGroup: String): Unit = {
     this.ruleGroup = ruleGroup
   }
+  def getTimestamp: Long = this.timestamp
 
-  def this(vin: String, birthday: String, brand: String, series: String, infoType: String, ruleGroup:String) {
+  def setTimestamp(timestamp: Long): Unit = {
+    this.timestamp = timestamp
+  }
+  def getRuleFlow: String = this.ruleFlow
+
+  def setRuleFlow(ruleFlow: String): Unit = {
+    this.ruleFlow = ruleFlow
+  }
+  def this(vin: String, birthday: String, brand: String, series: String, infoType: String, ruleGroup:String, timestamp:Long, ruleFlow:String) {
     this()
     this.vin = vin
     this.birthday = birthday
     this.brand = brand
     this.series = series
     this.infoType = infoType
-    this.ruleGroup=ruleGroup
+    this.ruleGroup = ruleGroup
+    this.timestamp = timestamp
+    this.ruleFlow = ruleFlow
   }
 
-  override def toString: String = "vin:"+this.vin+"|birth:"+this.birthday+"|brand:"+this.brand+"|series:"+this.series+"|info:"+this.infoType+"|rule:"+this.ruleGroup
+  override def toString: String = s"""{"vin":"${this.vin}","birthday":"${this.birthday}","brand":"${this.brand}","series":"${this.series}","infoType":"${this.infoType}","ruleGroup":"${this.ruleGroup}","timestamp":${this.timestamp},"ruleFlow":"${this.ruleFlow}"}"""
 }

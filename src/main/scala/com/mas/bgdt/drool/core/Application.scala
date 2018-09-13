@@ -14,8 +14,8 @@ object Application {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
       .builder()
-      .appName("drools_streaming")
-      .master("local[*]")
+      .appName("prj_sgm_iapps_platform")
+//      .master("local[*]")
       .getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
     val constants = new Constants(
@@ -41,12 +41,22 @@ object Application {
         val conn: Connection = SQLiteHandler.getConnection(constants.jdbcUrl)
         partition.map(x=>{
         try{
+          var lastRule:String =""
+          val timestamp:Long = new Date().getTime
           val model = JSONUtil.JSON2Model(x)
-          if(model.getSeries.toInt % 100000 ==0) println(model.getSeries +": "+ new Date().getTime)
-          val ks = KieSessionPool.getSession(conn,model.getRuleGroup)
-          ks.insert(model)
-          ks.fireAllRules()
-          model.getInfoType
+          model.setTimestamp(timestamp)
+          KieSessionPool.count +=1
+          if(KieSessionPool.count % 200000 ==1) println(KieSessionPool.count +": "+ timestamp)
+          while(model.getRuleGroup.startsWith("rule")&& !model.getRuleGroup.equals(lastRule)){
+            lastRule = model.getRuleGroup
+            model.setRuleFlow(model.getRuleFlow+model.getRuleGroup+";")
+            val ks = KieSessionPool.getSession(conn,model.getRuleGroup,timestamp)
+            val h = ks.insert(model)
+            ks.fireAllRules()
+            ks.delete(h) //不及时删除会OOM
+          }
+          JSONUtil.Model2JSON2(model)
+//          model.toString
         }catch {
           case e:Exception => e.printStackTrace();""
         }
