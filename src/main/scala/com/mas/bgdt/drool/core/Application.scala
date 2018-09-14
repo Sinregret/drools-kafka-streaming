@@ -46,16 +46,17 @@ object Application {
           val model = JSONUtil.JSON2Model(x)
           model.setTimestamp(timestamp)
           KieSessionPool.count +=1
-          if(KieSessionPool.count % 200000 ==1) println(KieSessionPool.count +": "+ timestamp)
+          if(KieSessionPool.count % 200000 ==1) println(timestamp)
           while(model.getRuleGroup.startsWith("rule")&& !model.getRuleGroup.equals(lastRule)){
             lastRule = model.getRuleGroup
             model.setRuleFlow(model.getRuleFlow+model.getRuleGroup+";")
             val ks = KieSessionPool.getSession(conn,model.getRuleGroup,timestamp)
             val h = ks.insert(model)
             ks.fireAllRules()
-            ks.delete(h) //不及时删除会OOM
+            ks.delete(h)
           }
-          JSONUtil.Model2JSON2(model)
+          model.setRuleGroup(null)
+          JSONUtil.Model2JSON(model)
 //          model.toString
         }catch {
           case e:Exception => e.printStackTrace();""

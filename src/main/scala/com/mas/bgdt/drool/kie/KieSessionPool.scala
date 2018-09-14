@@ -48,20 +48,21 @@ object KieSessionPool {
     */
   def addSession(ruleInfo:RuleInfo,timestamp:Long): Unit ={
 
-    if(ruleTimer.size>=100){
-
-      ruleTimer = ruleTimer.toSeq.sortBy(_._2).drop(20).toMap
-      ruleVersion = ruleVersion.filterKeys(ruleTimer.keySet.contains(_))
-      //无效ruleGroup
-      val invalid = ruleTimer.toSeq.sortBy(_._2).take(20).map(_._1)
-      //释放内存
-      sessionPool.filterKeys(invalid.contains(_)).foreach(_._2.dispose())
-      sessionPool = sessionPool.filterKeys(ruleTimer.keySet.contains(_))
+    this.synchronized{
+      if(ruleTimer.size>=100){
+        //无效ruleGroup
+        val invalid = ruleTimer.toSeq.sortBy(_._2).take(20).map(_._1)
+        //释放内存
+        sessionPool.filterKeys(invalid.contains(_)).foreach(_._2.dispose())
+        ruleTimer = ruleTimer.filterKeys(!invalid.contains(_))
+        ruleVersion = ruleVersion.filterKeys(!invalid.contains(_))
+        sessionPool = sessionPool.filterKeys(!invalid.contains(_))
+      }
+      println(s"======= Add Session ${ruleInfo.ruleGroup} =============")
+      sessionPool = sessionPool ++ Map(ruleInfo.ruleGroup -> RuleFileKie.getSession(ruleInfo.path))
+      ruleVersion = ruleVersion ++ Map(ruleInfo.ruleGroup -> ruleInfo.version)
+      ruleTimer = ruleTimer ++ Map(ruleInfo.ruleGroup -> timestamp)
     }
-    println("======= Add Session =============")
-    sessionPool = sessionPool ++ Map(ruleInfo.ruleGroup -> RuleFileKie.getSession(ruleInfo.path))
-    ruleVersion = ruleVersion ++ Map(ruleInfo.ruleGroup -> ruleInfo.version)
-    ruleTimer = ruleTimer ++ Map(ruleInfo.ruleGroup -> timestamp)
   }
 
   /**
@@ -71,7 +72,7 @@ object KieSessionPool {
     * @return
     */
   def queryRule(connection:Connection,ruleGroup:String): RuleInfo ={
-    println("check rule -- "+ ruleGroup)
+//    println("check rule -- "+ ruleGroup)
     val rs = SQLiteHandler.query(connection,s"select path,version from test where rule_group='${ruleGroup}'")
     val path = rs.getString("path")
     val version = rs.getString("version")
