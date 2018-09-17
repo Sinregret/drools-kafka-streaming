@@ -18,12 +18,7 @@ object Application {
 //      .master("local[*]")
       .getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
-    val constants = new Constants(
-      "jdbc:sqlite:/root/test.db",
-      "192.168.117.117:9092",
-      "test",
-      "192.168.117.117:9092",
-      "test_result")
+    val constants = Constants()
 
     val inputstream = spark.readStream
       .format("kafka")
@@ -46,7 +41,7 @@ object Application {
           val model = JSONUtil.JSON2Model(x)
           model.setTimestamp(timestamp)
           KieSessionPool.count +=1
-          if(KieSessionPool.count % 200000 ==1) println(timestamp)
+          if(KieSessionPool.count % 200000 ==0 || KieSessionPool.count ==1) println(KieSessionPool.count+" : "+timestamp)
           while(model.getRuleGroup.startsWith("rule")&& !model.getRuleGroup.equals(lastRule)){
             lastRule = model.getRuleGroup
             model.setRuleFlow(model.getRuleFlow+model.getRuleGroup+";")
@@ -66,7 +61,7 @@ object Application {
       .writeStream
       .outputMode("append")
       .format("kafka")
-      .option("checkpointLocation", "/opt/checkpoint")
+      .option("checkpointLocation", "/home/mas_drools/checkpoint")
       .option("kafka.bootstrap.servers", constants.targetBroker)
       .option("topic", constants.targetTopic)
       .start()

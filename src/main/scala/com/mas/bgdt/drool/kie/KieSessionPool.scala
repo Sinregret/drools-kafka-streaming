@@ -5,7 +5,6 @@
 package com.mas.bgdt.drool.kie
 
 import java.sql.Connection
-import java.util.Date
 import com.mas.bgdt.drool.config.RuleInfo
 import com.mas.bgdt.drool.handler.SQLiteHandler
 import org.kie.api.runtime.KieSession
@@ -14,7 +13,7 @@ object KieSessionPool {
   private var sessionPool :Map[String,KieSession] = Map[String,KieSession]()
   private var ruleVersion :Map[String,String] = Map[String,String]()
   private var ruleTimer :Map[String,Long] = Map[String,Long]()
-  var count:Long =0
+  var count :Long = 0
 
 //  def nowTime(): Long = new Date().getTime
 
@@ -31,8 +30,8 @@ object KieSessionPool {
       val ruleInfo = queryRule(connection,ruleGroup)
       addSession(ruleInfo,timestamp)
     }else if ((timestamp - lastTime) >= 10000){
-      ruleTimer = ruleTimer ++ Map(ruleGroup -> timestamp)
       /* 如果距离上次检查规则10s，则重新检查 */
+      ruleTimer = ruleTimer ++ Map(ruleGroup -> timestamp)
       val ruleInfo = queryRule(connection,ruleGroup)
       /* 如果version不匹配，重建KieSession */
       if (!ruleInfo.version.equals(ruleVersion.getOrElse(ruleGroup,""))){
@@ -73,9 +72,15 @@ object KieSessionPool {
     */
   def queryRule(connection:Connection,ruleGroup:String): RuleInfo ={
 //    println("check rule -- "+ ruleGroup)
-    val rs = SQLiteHandler.query(connection,s"select path,version from test where rule_group='${ruleGroup}'")
-    val path = rs.getString("path")
-    val version = rs.getString("version")
-    new RuleInfo(ruleGroup,path,version)
+    val rs = SQLiteHandler.query(connection,s"select file_path,ifnull(update_date,create_date) as update_date from tt_groups where rule_group='${ruleGroup}'")
+    val path = rs.getString("file_path")
+//    val path = s"/home/mas_drools/tomcat/apache-tomcat-7.0.90/webapps/prj_sgm_iapps_platform/WEB-INF/${ruleGroup}.drl"
+    val version = rs.getString("update_date")
+    if(path.nonEmpty && version.nonEmpty){
+      new RuleInfo(ruleGroup,path,version)
+    }else{
+      throw new NullPointerException("文件地址或更新日期为空")
+    }
+
   }
 }

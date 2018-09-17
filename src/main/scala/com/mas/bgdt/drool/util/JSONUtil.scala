@@ -13,15 +13,11 @@ object JSONUtil {
 
   /**
     * 不保留空值字段
-    * @param model
-    * @return
     */
   def Model2JSON(model:Model):String = gson.toJson(model, classOf[Model])
 
   /**
     * 保留空值字段
-    * @param model
-    * @return
     */
   def Model2JSON2(model:Model):String = gson2.toJson(model, classOf[Model])
 }
