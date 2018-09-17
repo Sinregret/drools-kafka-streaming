@@ -5,7 +5,7 @@ import java.util.Date
 
 import com.mas.bgdt.drool.config.Constants
 import com.mas.bgdt.drool.handler.SQLiteHandler
-import com.mas.bgdt.drool.kie.{KieSessionPool, RuleFileKie}
+import com.mas.bgdt.drool.kie.KieSessionPool
 import com.mas.bgdt.drool.util.JSONUtil
 import org.apache.spark.sql.SparkSession
 import org.kie.api.runtime.KieSession
@@ -61,7 +61,7 @@ object Application {
       .writeStream
       .outputMode("append")
       .format("kafka")
-      .option("checkpointLocation", "/home/mas_drools/checkpoint")
+      .option("checkpointLocation", constants.checkpoint)
       .option("kafka.bootstrap.servers", constants.targetBroker)
       .option("topic", constants.targetTopic)
       .start()

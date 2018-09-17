@@ -7,7 +7,8 @@ class Constants(
                  val sourceBroker:String,
                  val sourceTopic:String,
                  val targetBroker:String,
-                 val targetTopic:String
+                 val targetTopic:String,
+                 val checkpoint: String
                 ) extends Serializable
 
 object Constants{
@@ -16,8 +17,9 @@ object Constants{
              sourceBroker:String,
              sourceTopic:String,
              targetBroker:String,
-             targetTopic:String
-           ) = new Constants(jdbcUrl,sourceBroker,sourceTopic,targetBroker,targetTopic)
+             targetTopic:String,
+             checkpoint:String
+           ) = new Constants(jdbcUrl,sourceBroker,sourceTopic,targetBroker,targetTopic,checkpoint)
 
   def apply() = {
     val config = "conf.properties"
@@ -26,7 +28,9 @@ object Constants{
       PropertiesUtil.getKeyValue(config,"source_brokers"),
       PropertiesUtil.getKeyValue(config,"source_topic"),
       PropertiesUtil.getKeyValue(config,"target_brokers"),
-      PropertiesUtil.getKeyValue(config,"target_topic"))
+      PropertiesUtil.getKeyValue(config,"target_topic"),
+      PropertiesUtil.getKeyValue(config,"checkpoint_dir")
+    )
   }
 }
 
