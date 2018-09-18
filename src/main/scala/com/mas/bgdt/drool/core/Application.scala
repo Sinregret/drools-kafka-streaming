@@ -1,10 +1,7 @@
 package com.mas.bgdt.drool.core
 
-import java.sql.Connection
 import java.util.Date
-
 import com.mas.bgdt.drool.config.Constants
-import com.mas.bgdt.drool.handler.SQLiteHandler
 import com.mas.bgdt.drool.kie.KieSessionPool
 import com.mas.bgdt.drool.util.JSONUtil
 import org.apache.spark.sql.SparkSession
@@ -32,27 +29,23 @@ object Application {
       .select($"value")
       .as[String]
       .mapPartitions(partition=>{
-        //获取连接
-        val conn: Connection = SQLiteHandler.getConnection(constants.jdbcUrl)
         partition.map(x=>{
         try{
           var lastRule:String =""
-          val timestamp:Long = new Date().getTime
           val model = JSONUtil.JSON2Model(x)
-          model.setTimestamp(timestamp)
           KieSessionPool.count +=1
-          if(KieSessionPool.count % 200000 ==0 || KieSessionPool.count ==1) println(KieSessionPool.count+" : "+timestamp)
+          if(KieSessionPool.count % 200000 ==0 || KieSessionPool.count ==1) println(KieSessionPool.count+" : ")
           while(model.getRuleGroup.startsWith("rule")&& !model.getRuleGroup.equals(lastRule)){
             lastRule = model.getRuleGroup
             model.setRuleFlow(model.getRuleFlow+model.getRuleGroup+";")
-            val ks = KieSessionPool.getSession(conn,model.getRuleGroup,timestamp)
+            val ks = KieSessionPool.getSession(model.getRuleGroup)
             val h = ks.insert(model)
             ks.fireAllRules()
             ks.delete(h)
           }
+          model.setTimestamp(new Date().getTime)
           model.setRuleGroup(null)
           JSONUtil.Model2JSON(model)
-//          model.toString
         }catch {
           case e:Exception => e.printStackTrace();""
         }

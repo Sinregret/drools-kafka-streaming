@@ -66,6 +66,4 @@ class Model() extends Serializable {
     this.timestamp = timestamp
     this.ruleFlow = ruleFlow
   }
-
-  override def toString: String = s"""{"vin":"${this.vin}","birthday":"${this.birthday}","brand":"${this.brand}","series":"${this.series}","infoType":"${this.infoType}","ruleGroup":"${this.ruleGroup}","timestamp":${this.timestamp},"ruleFlow":"${this.ruleFlow}"}"""
 }
